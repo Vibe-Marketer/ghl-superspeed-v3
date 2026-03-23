@@ -1,0 +1,56 @@
+{
+  "version": "1.0.0",
+  "blueprints": {
+    "webinar-funnel": {
+      "name": "Webinar Funnel",
+      "description": "Complete webinar campaign: nurture → registration → reminders → follow-up → cart close",
+      "workflows": 8,
+      "estimated_steps": 45,
+      "tags_needed": ["nurture-start", "webinar-registered", "webinar-attended", "webinar-no-show", "webinar-cart-open", "pipeline-purchased", "webinar-no-buy"],
+      "structure": [
+        {"id": "nurture", "name": "List Nurture", "steps": "4 emails + 3 waits", "trigger": "nurture-start"},
+        {"id": "confirm", "name": "Confirmation", "steps": "1 sms + 1 email", "trigger": "webinar-registered"},
+        {"id": "reminders", "name": "Day-Of Reminders", "steps": "3 sms + 1 email + 3 waits", "trigger": "webinar-registered"},
+        {"id": "attendee", "name": "Attendee Follow-Up", "steps": "4 sms + 5 emails + 4 waits", "trigger": "webinar-attended"},
+        {"id": "noshow", "name": "No-Show Replay", "steps": "4 sms + 2 emails + 3 waits", "trigger": "webinar-no-show"},
+        {"id": "deadline", "name": "Cart Close", "steps": "2 sms + 1 wait", "trigger": "webinar-cart-open"},
+        {"id": "postcart", "name": "Post-Cart Nurture", "steps": "1 sms + 1 email + 1 wait", "trigger": "webinar-no-buy"},
+        {"id": "exit", "name": "Purchase Exit", "steps": "1 sms", "trigger": "pipeline-purchased"}
+      ]
+    },
+    "lead-nurture": {
+      "name": "Lead Nurture Sequence",
+      "description": "7-day email/SMS nurture for new leads",
+      "workflows": 1,
+      "estimated_steps": 14,
+      "tags_needed": ["new-lead"],
+      "structure": [
+        {"id": "nurture", "name": "7-Day Nurture", "steps": "7 emails + 7 waits", "trigger": "new-lead"}
+      ]
+    },
+    "appointment-pipeline": {
+      "name": "Appointment Pipeline",
+      "description": "Booking confirmation → reminders → no-show follow-up → post-appointment",
+      "workflows": 4,
+      "estimated_steps": 20,
+      "tags_needed": ["appt-booked", "appt-showed", "appt-noshow"],
+      "structure": [
+        {"id": "confirm", "name": "Booking Confirmation", "steps": "1 sms + 1 email", "trigger": "appt-booked"},
+        {"id": "remind", "name": "Reminders", "steps": "3 sms + 2 waits", "trigger": "appt-booked"},
+        {"id": "noshow", "name": "No-Show Recovery", "steps": "2 sms + 1 email + 2 waits", "trigger": "appt-noshow"},
+        {"id": "postappt", "name": "Post-Appointment", "steps": "1 sms + 1 email + 1 wait + review_request", "trigger": "appt-showed"}
+      ]
+    },
+    "onboarding": {
+      "name": "Client Onboarding",
+      "description": "Welcome → setup instructions → check-in → review request",
+      "workflows": 2,
+      "estimated_steps": 10,
+      "tags_needed": ["client-purchased", "onboarding-complete"],
+      "structure": [
+        {"id": "welcome", "name": "Welcome + Onboarding", "steps": "1 sms + 3 emails + 3 waits + 1 task + 1 opp", "trigger": "client-purchased"},
+        {"id": "complete", "name": "Onboarding Complete", "steps": "1 email + 1 tag", "trigger": "onboarding-complete"}
+      ]
+    }
+  }
+}
