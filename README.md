@@ -1,207 +1,338 @@
 # GHL SuperSpeed v3
 
-The fastest programmatic GHL workflow builder. Creates complete campaigns (workflows + steps + triggers) via GHL's internal API in seconds.
+Build complete GHL workflow campaigns in seconds, not hours. Programmatic workflow creation via GHL's internal API with parallel execution.
 
-**Benchmark: 8 workflows, 45 action steps, 8 triggers in 3.6 seconds.**
+**Proven: 8 workflows, 45 steps, 8 triggers deployed in 3.2 seconds.**
 
-## Prerequisites
+---
 
-### 1. MCP Server Access (Required for auto-auth)
+## What This Does
 
-This system uses the DLF Agency MCP Server for Firebase JWT token management. The server handles token refresh automatically.
+You define a campaign in Python — workflows, steps (SMS, email, wait, tags), and triggers — then the engine builds everything in GHL simultaneously. All 8 workflows run their full pipeline in parallel.
 
-**MCP Server:** `https://dlf-agency.skool-203.workers.dev`
+```python
+from lib.engine import *
 
-To get access, email **info@doctorleadflow.com** with subject "MCP Server Access Request".
+CAMPAIGN = {
+    "welcome": {
+        "name": "Welcome Sequence",
+        "tag": "new-lead",              # Trigger: fires when this tag is added
+        "templates": link_steps([
+            sms_step("Welcome", "Hey {{contact.first_name}}, welcome!"),
+            wait_step("1 day", 1, "days"),
+            email_step("Follow Up", "checking in", "Your follow-up email text here", "Dr. Name"),
+            wait_step("2 hours", 2, "hours"),
+            tag_step("Mark Done", ["welcome-complete"]),
+        ]),
+    }
+}
+```
 
-Once granted, you'll receive:
-- An ADMIN_PIN for the CLI token endpoint
-- Access to 18 workflow builder MCP tools via Claude Code
+Then run it:
+```bash
+python3 campaigns/your-campaign.py
+```
 
-### 2. Firebase JWT Token (Alternative -- no MCP needed)
+Output:
+```
+Creating folder: Welcome Campaign
+Building workflows + steps + triggers (all parallel)...
+  Welcome Sequence: 5 steps + trigger (new-lead)
+DONE in 1.1 seconds
+```
 
-If you don't use the MCP server, you need a Firebase JWT manually:
+---
 
-1. Log into `app.gohighlevel.com`
-2. Open DevTools > Application > IndexedDB > `firebaseLocalStorageDb`
-3. Copy the `idToken` from the stored user object
-4. Export: `export GHL_FIREBASE_TOKEN='your_token_here'`
+## Setup (5 minutes)
 
-Tokens expire in 1 hour. For long-running use, set `GHL_FIREBASE_REFRESH_TOKEN` (extract the `refreshToken` from the same IndexedDB entry -- refresh tokens never expire).
-
-### 3. Python 3.9+
-
-No pip dependencies. The engine uses only stdlib (`urllib`, `json`, `uuid`, `ssl`, `concurrent.futures`).
-
-## Quick Start
+### Step 1: Clone
 
 ```bash
-# Clone
 git clone https://github.com/drleadflow/ghl-superspeed-v3.git
 cd ghl-superspeed-v3
+```
 
-# Option A: Token from MCP server (recommended)
-export GHL_FIREBASE_TOKEN=$(curl -s "https://dlf-agency.skool-203.workers.dev/cli/token?pin=YOUR_PIN" | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
+No pip install needed. Zero dependencies — uses only Python stdlib.
 
-# Option B: Token from environment
-export GHL_FIREBASE_TOKEN='eyJhbG...'
+### Step 2: Get a Firebase Token
 
-# Run the PPP webinar campaign (8 workflows, 45 steps)
+GHL's internal API uses Firebase JWT tokens (not OAuth). You need one of these auth methods:
+
+#### Option A: MCP Server (Recommended — auto-refresh, never expires)
+
+The DLF Agency MCP Server manages Firebase tokens automatically with a 55-minute KV cache and auto-refresh.
+
+**To get access:** Email **info@doctorleadflow.com** with subject "SuperSpeed Access Request"
+
+You'll receive an ADMIN_PIN. Then:
+
+```bash
+# One-liner to get a fresh token (valid ~55 min, auto-refreshes)
+export GHL_ADMIN_PIN="your-pin"
+export GHL_FIREBASE_TOKEN=$(curl -s "https://dlf-agency.skool-203.workers.dev/cli/token?pin=$GHL_ADMIN_PIN" | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
+```
+
+#### Option B: Firebase Refresh Token (Self-hosted, never expires)
+
+If you have your own GHL account:
+
+1. Log into `app.gohighlevel.com`
+2. Open Chrome DevTools > Application > IndexedDB > `firebaseLocalStorageDb` > `firebaseLocalStorage`
+3. Click the entry — find `stsTokenManager.refreshToken`
+4. Copy the refresh token (long string, never expires)
+
+```bash
+export GHL_FIREBASE_REFRESH_TOKEN="your-refresh-token"
+```
+
+The engine auto-refreshes this into a 1-hour ID token via Google's `securetoken.googleapis.com` API.
+
+#### Option C: Direct ID Token (Quick test, expires in 1 hour)
+
+From the same IndexedDB entry, copy `stsTokenManager.accessToken`:
+
+```bash
+export GHL_FIREBASE_TOKEN="eyJhbG..."
+```
+
+This expires in 1 hour. Fine for testing, not for production.
+
+### Step 3: Set Your Location
+
+Edit your campaign file with your GHL location ID:
+
+```python
+LOCATION_ID = "your-location-id"  # From GHL URL: app.gohighlevel.com/location/THIS_PART/...
+```
+
+### Step 4: Run
+
+```bash
 python3 campaigns/ppp-webinar.py
-
-# Run tests (28 tests)
-python3 tests/test_engine.py
 ```
 
-## Architecture
+---
 
-### Pipeline (per workflow, all run in parallel)
+## How It Works
+
+### The Pipeline (per workflow)
+
+Each workflow runs this 6-step pipeline. All workflows execute in parallel.
 
 ```
-1. POST /workflow/{loc}                    -- Create workflow
-2. POST /workflow/{loc}/tags/create        -- Create location tag
-3. POST /workflow/{loc}/trigger            -- Create trigger with tag condition
-4. PUT  /workflow/{loc}/trigger/{id}       -- Link trigger to first step (targetActionId)
-5. PUT  /workflow/{loc}/{wfId}             -- Save action steps (templates array)
-6. PUT  /workflow/{loc}/{wfId}/auto-save   -- Enable advanced canvas + sync to Firebase
+1. POST /workflow/{loc}                    Create workflow in folder
+2. POST /workflow/{loc}/tags/create        Create location tag (so trigger can reference it)
+3. POST /workflow/{loc}/trigger            Create trigger with tag condition
+4. PUT  /workflow/{loc}/trigger/{id}       Link trigger to first step (targetActionId)
+5. PUT  /workflow/{loc}/{wfId}             Save action steps (templates array)
+6. PUT  /workflow/{loc}/{wfId}             Sync triggers + enable advanced canvas
 ```
-
-All 8 workflows run their full 6-step pipeline simultaneously via `ThreadPoolExecutor`.
 
 ### Auth Flow
 
 ```
-MCP Server (Cloudflare Worker)
-  --> KV-cached Firebase JWT (55-min TTL)
-      --> Auto-refreshes via Firebase securetoken API
-          --> Refresh token stored as Cloudflare secret (never expires)
+TokenManager tries sources in order:
+  1. MCP Server /cli/token  (if GHL_ADMIN_PIN set)     — auto-refresh, recommended
+  2. Firebase refresh token  (if GHL_FIREBASE_REFRESH_TOKEN set)  — self-hosted
+  3. GHL_FIREBASE_TOKEN env var                          — direct, 1hr expiry
+  4. CLI argument                                        — python3 script.py <token>
 ```
 
-The engine tries sources in order:
-1. MCP server `/cli/token` endpoint (if `GHL_ADMIN_PIN` set)
-2. Firebase refresh (if `GHL_FIREBASE_REFRESH_TOKEN` set)
-3. `GHL_FIREBASE_TOKEN` environment variable
-4. CLI argument
+On 401, the engine auto-retries with a fresh token.
 
-## Project Structure
+### API Headers
+
+Every request to `backend.leadconnectorhq.com` needs:
+```
+token-id: <firebase-jwt>     (NOT Authorization: Bearer)
+channel: APP
+source: WEB_USER
+Content-Type: application/json
+```
+
+---
+
+## Proven Step Types (4 core types, fully tested)
+
+These 4 types are battle-tested with correct schemas and UI rendering verified:
+
+### SMS
+```python
+sms_step("Welcome", "Hey {{contact.first_name}}, welcome!")
+```
+
+### Email
+```python
+email_step("Follow Up", "subject line", "Plain text body (auto-converted to HTML)", "From Name")
+```
+The `dm_email()` formatter converts plain text with `**bold**` and `*italic*` to styled HTML.
+
+### Wait
+```python
+wait_step("5 minutes", 5, "minutes")
+wait_step("2 hours", 2, "hours")      # IMPORTANT: engine sends "hour" (singular) to API
+wait_step("3 days", 3, "days")
+```
+
+**Critical:** GHL's canvas uses inconsistent unit strings: `minutes` (plural), `hour` (SINGULAR), `days` (plural). The engine handles this automatically — you always pass "hours" and it sends "hour" to the API.
+
+### Contact Tag
+```python
+tag_step("Add VIP Tag", ["vip", "high-value"])
+tag_step("Remove Old Tag", ["old-tag"], remove=True)
+```
+
+### Trigger (Contact Tag Added)
+```python
+# In your campaign dict, set the "tag" field:
+"tag": "nurture-start"    # Creates a contact_tag trigger
+```
+
+The engine automatically:
+1. Creates the tag at location level (`POST /workflow/{loc}/tags/create`)
+2. Creates the trigger with the correct condition schema
+3. Links the trigger to the first step via `targetActionId`
+
+---
+
+## Campaign Format
+
+A campaign is a Python dict where each key is a workflow:
+
+```python
+CAMPAIGN = {
+    "01": {
+        "name": "01. Welcome Sequence",           # Workflow name in GHL
+        "tag": "welcome-start",                    # Tag trigger (optional)
+        "templates": link_steps([                  # Action steps (auto-linked)
+            sms_step("SMS 1", "Hey!"),
+            wait_step("1 day", 1, "days"),
+            email_step("Email 1", "subject", "body text", "Sender"),
+            wait_step("2 hours", 2, "hours"),
+            sms_step("SMS 2", "Following up!"),
+        ]),
+    },
+    "02": {
+        "name": "02. Follow-Up",
+        "tag": "follow-up-start",
+        "templates": link_steps([
+            email_step("Reminder", "don't forget", "Your reminder text"),
+            wait_step("3 days", 3, "days"),
+            tag_step("Mark Complete", ["sequence-done"]),
+        ]),
+    },
+}
+```
+
+`link_steps()` handles:
+- UUID generation for each step
+- `order` numbering (0, 1, 2...)
+- `parentKey` linking (each step points to its predecessor)
+- `next` linking (each step points to its successor)
+
+---
+
+## Building Your Own Campaign
+
+### 1. Create a new file
+
+```bash
+cp campaigns/ppp-webinar.py campaigns/my-campaign.py
+```
+
+### 2. Edit the config
+
+```python
+LOCATION_ID = "your-location-id"
+PARENT_FOLDER = ""  # Leave empty for root, or set a folder ID
+COMPANY_ID = "your-company-id"
+USER_ID = "your-user-id"
+```
+
+### 3. Define your workflows
+
+Use `sms_step()`, `email_step()`, `wait_step()`, and `tag_step()` inside `link_steps()`.
+
+### 4. Run
+
+```bash
+GHL_FIREBASE_TOKEN="your-token" python3 campaigns/my-campaign.py
+```
+
+### 5. Verify in GHL
+
+Open the workflow URLs printed in the output:
+- **Classic builder:** `https://app.gohighlevel.com/location/{locationId}/workflow/{workflowId}`
+- **Advanced canvas:** `https://app.gohighlevel.com/location/{locationId}/workflow/{workflowId}/advanced-canvas`
+
+---
+
+## Speed Benchmarks
+
+| Campaign | Workflows | Steps | Triggers | Time | API Calls |
+|----------|-----------|-------|----------|------|-----------|
+| PPP Webinar | 8 | 45 | 8 | 3.2s | 58 |
+| Single workflow | 1 | 5 | 1 | 0.8s | 8 |
+
+Speed comes from `ThreadPoolExecutor` — all workflows run their full 6-step pipeline simultaneously.
+
+---
+
+## Gotchas (Hard-Won Knowledge)
+
+### Wait "hour" is singular
+GHL canvas uses `minutes` (plural), `hour` (SINGULAR), `days` (plural). Sending `"hours"` renders the number but not the unit label. The engine maps this automatically.
+
+### Tags must exist before triggers reference them
+`POST /workflow/{loc}/tags/create` with `{"tag": "name"}` BEFORE creating a trigger with that tag. Otherwise the trigger tag renders blank in the UI.
+
+### Triggers need targetActionId
+After creating a trigger via `POST /trigger`, update it with `PUT /trigger/{id}` including `targetActionId` pointing to the first step's UUID. Without this, the trigger floats disconnected on the advanced canvas.
+
+### Version field is mandatory on PUT
+Every `PUT /workflow/{loc}/{wfId}` must include `version` matching the current version. GHL increments on each save. Stale versions are rejected.
+
+### Auto-save endpoint needs a UI session
+`PUT /workflow/{loc}/{wfId}/auto-save` requires an active GHL editor session. For programmatic use, the regular `PUT` with `triggersChanged: true` + `oldTriggers`/`newTriggers` reliably syncs triggers to Firebase.
+
+### Auth is Firebase JWT, not OAuth
+Use the `token-id` header with a Firebase JWT. NOT `Authorization: Bearer`. Every request also needs `channel: APP`.
+
+---
+
+## File Structure
 
 ```
 ghl-superspeed-v3/
-  lib/engine.py              -- Core engine: TokenManager, GHLClient, CampaignBuilder, step builders
-  campaigns/ppp-webinar.py   -- Example: 8-workflow webinar campaign (45 steps, 8 triggers)
-  tests/test_engine.py       -- 28 tests, all passing
-  tests/live_test_render.py  -- Live API render verification test
-  templates/blueprints.json  -- Campaign blueprints (webinar, nurture, appointment, onboarding)
-  chrome-extension/          -- Chrome extension for passive token capture
+  lib/engine.py              Core engine (TokenManager, GHLClient, CampaignBuilder, step builders)
+  campaigns/ppp-webinar.py   Example: 8-workflow webinar campaign
+  tests/test_engine.py       28 unit tests (all passing)
+  tests/verify_individual.py Live API verification for all 56 action types
+  tests/verify_consolidated.py  Consolidated 6-workflow verification test
+  scripts/refresh-token.sh   Firebase JWT refresh helper
+  templates/blueprints.json  Campaign blueprint templates
+  chrome-extension/          Chrome extension for passive token capture
 ```
 
-## Step Builders
+---
 
-```python
-from lib.engine import sms_step, email_step, wait_step, tag_step, webhook_step, ai_step, link_steps
+## Additional Action Types (53 verified, use with caution)
 
-steps = link_steps([
-    sms_step("Welcome", "Hey {{contact.first_name}}!"),
-    wait_step("1 day", 1, "days"),
-    email_step("Follow Up", "subject line", "Email body text"),
-    wait_step("2 hours", 2, "hours"),    # Automatically sends "hour" (singular) to API
-    tag_step("Mark Complete", ["campaign-done"]),
-    webhook_step("Notify", "https://your-webhook.com"),
-    ai_step("Classify", "Classify this lead", "gpt-4o"),
-])
-```
+Beyond the 4 proven types, 53 total action types pass the save API. These are verified to SAVE but their UI rendering has not been fully validated:
 
-`link_steps()` auto-generates UUIDs, sets `order`, and links `parentKey`/`next` for the chain.
+`add_contact_tag`, `remove_contact_tag`, `update_contact_field`, `create_update_contact`, `assign_user`, `remove_assigned_user`, `edit_conversation`, `dnd_contact`, `add_notes`, `task-notification`, `find_contact`, `sms`, `email`, `call`, `voicemail`, `messenger`, `gmb`, `internal_notification`, `instagram-dm`, `ig_interactive_messenger`, `fb_interactive_messenger`, `respond_on_comment`, `review_request`, `wait`, `if_else`, `add_to_workflow`, `remove_from_workflow`, `remove_from_all_workflows`, `update_custom_value`, `drip`, `chatgpt`, `conversation_ai`, `webhook`, `custom_webhook`, `google_sheets`, `slack_message`, `custom_code`, `math_operation`, `text_formatter`, `number_formatter`, `datetime_formatter`, `array_functions`, `ivr_gather`, `ivr_connect_call`, `facebook_conversion_api`, `stripe_one_time_charge`, `update_appointment_status`, `membership_grant_offer`, `membership_revoke_offer`, `create_opportunity`, `remove_opportunity`, `workflow_split`, `transition`
 
-## Critical GHL Gotchas
+3 types that fail save API due to structural requirements:
+- `goto` — must be inside an `if_else` branch
+- `find_opportunity` — needs a real `pipeline_id`
+- `workflow_goal` — needs non-empty `segments[0].conditions`
 
-These are hard-won discoveries from reverse-engineering the internal API. **Read before building.**
+---
 
-### Wait Step Unit Strings (INCONSISTENT)
+## MCP Server Integration (Claude Code)
 
-GHL's advanced canvas uses **inconsistent** unit strings:
+With MCP access, you get 18 workflow builder tools in Claude Code. Add to `.mcp.json`:
 
-| Unit | API String | Notes |
-|------|-----------|-------|
-| Minutes | `"minutes"` | Plural |
-| Hours | `"hour"` | **SINGULAR** -- `"hours"` renders the number but NOT the label |
-| Days | `"days"` | Plural |
-
-The engine handles this automatically -- `wait_step("2 hours", 2, "hours")` sends `"hour"` to the API.
-
-### Triggers Require 3 Steps
-
-1. **Create location tag first** -- `POST /workflow/{loc}/tags/create` with `{"tag": "name"}`. Without this, the trigger tag condition renders blank in the UI.
-2. **Create trigger** -- `POST /workflow/{loc}/trigger` with conditions, actions, etc.
-3. **Update trigger with `targetActionId`** -- `PUT /workflow/{loc}/trigger/{id}` linking to the first step's ID. Without this, the trigger floats disconnected on the advanced canvas.
-
-### Auto-Save Required for Advanced Canvas
-
-The regular `PUT /workflow/{loc}/{wfId}` saves steps but the advanced canvas reads from Firebase/Firestore. You must also call `PUT /workflow/{loc}/{wfId}/auto-save` which:
-
-- Sets `meta.advanceCanvasMeta.enabled = true`
-- Adds `advanceCanvasMeta.position` to each step and trigger
-- Syncs trigger data to Firebase Storage (`triggersFilePath`)
-- Creates an `autoSaveSession` for version tracking
-
-### Version Field
-
-- `version` is **mandatory** on PUT -- must match current version or the request is rejected
-- GHL increments version on each save
-- `autoSaveSession.version` = the version when the session **started** (not the current version)
-
-### Type String Corrections
-
-Many documented type strings are wrong. Verified corrections:
-
-| Documentation Says | Actually Use |
-|-------------------|-------------|
-| `create_contact` | `create_update_contact` |
-| `openai_completion` | `chatgpt` |
-| `date_formatter` | `datetime_formatter` |
-| `split` | `workflow_split` |
-| `internal_create_opportunity` | `create_opportunity` |
-| `facebook_message` | `fb_interactive_messenger` |
-| `instagram_message` | `instagram-dm` |
-
-56 action types verified. Full list in `lib/engine.py:VERIFIED_ACTIONS`.
-
-### Dual Storage Model
-
-GHL workflows are split across two storage systems:
-
-- **MongoDB** -- workflow metadata (name, status, version). Accessed via REST API.
-- **Firebase Storage** -- actual workflow logic (templates array, triggers). Accessed via signed URLs.
-- **Firestore** -- real-time database used by the advanced canvas builder for live editing.
-
-The auto-save endpoint bridges all three.
-
-## MCP Tools (Claude Code Integration)
-
-With MCP server access, these 18 tools are available in Claude Code:
-
-| Tool | Purpose |
-|------|---------|
-| `ghl_workflow_builder_list` | List workflows/folders |
-| `ghl_workflow_builder_create` | Create workflow |
-| `ghl_workflow_builder_get` | Get workflow metadata |
-| `ghl_workflow_builder_get_steps` | Get steps from Firebase |
-| `ghl_workflow_builder_get_triggers` | Get triggers from Firebase |
-| `ghl_workflow_builder_update` | Update workflow settings |
-| `ghl_workflow_builder_save_steps` | Save action steps |
-| `ghl_workflow_builder_create_trigger` | Create trigger |
-| `ghl_workflow_builder_update_trigger` | Update trigger (targetActionId) |
-| `ghl_workflow_builder_delete_trigger` | Delete trigger |
-| `ghl_workflow_builder_auto_save` | Sync to advanced canvas |
-| `ghl_workflow_builder_create_tag` | Create location tag |
-| `ghl_workflow_builder_publish` | Publish workflow |
-| `ghl_workflow_builder_draft` | Set to draft |
-| `ghl_workflow_builder_delete` | Delete workflow |
-| `ghl_workflow_builder_create_folder` | Create folder |
-| `ghl_workflow_builder_clone` | Clone workflow |
-| `ghl_workflow_builder_error_count` | Get error count |
-
-Add the MCP server to your Claude Code config (`.mcp.json`):
 ```json
 {
   "mcpServers": {
@@ -213,19 +344,17 @@ Add the MCP server to your Claude Code config (`.mcp.json`):
 }
 ```
 
-## GHL URLs
+For MCP access: **info@doctorleadflow.com**
 
-- **Classic builder:** `https://app.gohighlevel.com/location/{locationId}/workflow/{workflowId}`
-- **Advanced canvas:** `https://app.gohighlevel.com/location/{locationId}/workflow/{workflowId}/advanced-canvas`
+---
 
-## Test Account
+## Tests
 
-| Field | Value |
-|-------|-------|
-| Location | `2hP6rCb3COd2HUjD25w2` (Christians Testing) |
-| Company | `R1HWQKyMMoj4PJ5mAYed` |
-| User | `YewkebOufK3hmeP1gx4B` |
-| Test Folder | `ca2666ec-84af-4155-9d0a-1774430c98b7` (++ Agent Testing) |
+```bash
+python3 tests/test_engine.py     # 28 unit tests, no API calls
+```
+
+---
 
 ## License
 
