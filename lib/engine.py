@@ -472,11 +472,15 @@ class CampaignBuilder:
             steps_ok = bool(put_result and not put_result.get("_error"))
             new_version = put_result.get("version", 2) if put_result else 2
 
-            # Step 4: Auto-save with advanced canvas format (syncs triggers to Firebase)
-            if steps_ok:
+            # Step 4: Second PUT with triggers + canvas meta
+            # The /auto-save endpoint requires an active UI editor session and
+            # fails with 422 when called programmatically. The regular PUT with
+            # triggersChanged + oldTriggers/newTriggers reliably syncs triggers
+            # to Firebase Storage. Discovered via live integration testing 2026-03-23.
+            if steps_ok and (trigger_data or True):
                 current = self.client.request("GET", f"/workflow/{self.loc}/{wf_id}")
                 if current and not current.get("_error"):
-                    # Build trigger list matching captured oldTriggers/newTriggers format
+                    # Build trigger list for Firebase sync
                     trigger_list = []
                     if trigger_data:
                         now = time.strftime("%Y-%m-%dT%H:%M:%S.000Z", time.gmtime())
@@ -487,7 +491,6 @@ class CampaignBuilder:
                         trigger_data["date_added"] = now
                         trigger_data["date_updated"] = now
                         trigger_data["advanceCanvasMeta"] = {"position": {"x": 57.5, "y": -73}}
-                        # Remove create-only fields not in the captured auto-save format
                         trigger_data.pop("company_id", None)
                         trigger_data.pop("company_age", None)
                         trigger_data.pop("triggersChanged", None)
@@ -500,7 +503,6 @@ class CampaignBuilder:
                         s["advanceCanvasMeta"] = {"position": {"x": 400 + idx * 300, "y": 0}}
                         s.setdefault("cat", "")
                         s.setdefault("order", idx)
-                        # Ensure wait steps have all fields the canvas needs to render time
                         if s.get("type") == "wait" and "attributes" in s:
                             attrs = {**s["attributes"]}
                             attrs.setdefault("type", "time")
@@ -509,12 +511,9 @@ class CampaignBuilder:
                             attrs.setdefault("hybridActionType", "wait")
                             attrs.setdefault("convertToMultipath", False)
                             attrs.setdefault("transitions", [])
-                            # Ensure name matches for canvas label rendering
-                            # Fix hours: GHL canvas uses "hour" (singular), not "hours"
                             if "startAfter" in attrs:
                                 sa = attrs["startAfter"]
                                 sa.setdefault("when", "after")
-                                # Normalize "hours" → "hour" for canvas rendering
                                 if sa.get("type") == "hours":
                                     sa["type"] = "hour"
                                 unit_label = {"minutes": "Minutes", "hour": "Hour", "days": "Days"}.get(sa.get("type", ""), "")
@@ -524,35 +523,22 @@ class CampaignBuilder:
                             s["attributes"] = attrs
                         steps_with_meta.append(s)
 
-                    # Enable advanced canvas on workflow meta
+                    # Enable advanced canvas
                     meta = current.get("meta") or {}
                     meta["advanceCanvasMeta"] = {"enabled": True, "enabledAt": time.strftime("%Y-%m-%dT%H:%M:%S.000Z", time.gmtime())}
 
-                    autosave_body = {
-                        **{k: v for k, v in current.items()},
-                        "status": "draft",
+                    # Use regular PUT (not /auto-save) — reliable for programmatic use
+                    sync_body = {
+                        "name": wf_def["name"],
+                        "version": current.get("version", new_version),
                         "meta": meta,
                         "workflowData": {"templates": steps_with_meta},
                         "triggersChanged": bool(trigger_list),
                         "oldTriggers": trigger_list,
                         "newTriggers": trigger_list,
-                        "isAutoSave": True,
-                        "autoSaveSession": {
-                            "workflowId": wf_id,
-                            "id": str(uuid.uuid4()),
-                            "userId": user_id,
-                            "version": current.get("version", new_version),
-                            "inProgress": True,
-                        },
-                        "scheduledPauseDates": [],
-                        "modifiedSteps": [],
-                        "deletedSteps": [],
-                        "createdSteps": [],
-                        "senderAddress": {},
-                        "eventStartDate": "",
                     }
                     self.client.request(
-                        "PUT", f"/workflow/{self.loc}/{wf_id}/auto-save", autosave_body
+                        "PUT", f"/workflow/{self.loc}/{wf_id}", sync_body
                     )
 
             return key, wf_id, steps_ok, trigger_ok
