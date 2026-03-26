@@ -1,0 +1,61 @@
+name: Log to Command Center
+on:
+  push:
+    branches: [main]
+jobs:
+  log:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log activity
+        run: |
+          python3 << 'PYEOF'
+import urllib.request, json, base64, os
+from datetime import datetime, timezone
+
+token = os.environ.get("BLADE_OPS_TOKEN", "")
+if not token:
+    print("No token, skipping")
+    exit(0)
+
+entry = {
+    "repo": os.environ.get("GITHUB_REPOSITORY", ""),
+    "commit": os.environ.get("GITHUB_SHA", "")[:7],
+    "message": os.environ.get("COMMIT_MSG", "")[:120],
+    "by": "claude-code",
+    "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00","Z"),
+}
+
+try:
+    resp = urllib.request.urlopen(
+        urllib.request.Request(
+            "https://api.github.com/repos/drleadflow/blade-ops/contents/logs/dev-activity.json",
+            headers={"Authorization": f"token {token}"}
+        ), timeout=10
+    ).read()
+    data = json.loads(resp)
+    current = json.loads(base64.b64decode(data["content"]))
+    sha = data["sha"]
+except:
+    current = []
+    sha = None
+
+current.insert(0, entry)
+current = current[:50]
+encoded = base64.b64encode(json.dumps(current, indent=2).encode()).decode()
+body = {"message": f"Activity: {entry['commit']}", "content": encoded, "branch": "main"}
+if sha:
+    body["sha"] = sha
+
+urllib.request.urlopen(
+    urllib.request.Request(
+        "https://api.github.com/repos/drleadflow/blade-ops/contents/logs/dev-activity.json",
+        data=json.dumps(body).encode(),
+        headers={"Authorization": f"token {token}", "Content-Type": "application/json"},
+        method="PUT"
+    ), timeout=15
+)
+print(f"Logged: {entry['message'][:60]}")
+PYEOF
+        env:
+          BLADE_OPS_TOKEN: ${{ secrets.BLADE_OPS_TOKEN }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
