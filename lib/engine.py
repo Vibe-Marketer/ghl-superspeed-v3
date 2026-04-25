@@ -3,7 +3,7 @@
 GHL SuperSpeed Engine v3 — The fastest, most reliable GHL workflow builder.
 
 Combines:
-- Emeka's campaign-as-code pattern + Chrome extension token capture
+- Emeka's campaign-as-code pattern
 - Our 56 verified type strings + Firebase auto-refresh
 - Parallel batch creation for maximum speed
 - AI campaign generation from plain English descriptions
@@ -18,7 +18,7 @@ from typing import Optional
 # ── Config ────────────────────────────────────────────────────────────────────
 
 BASE_URL = "https://backend.leadconnectorhq.com"
-MCP_SERVER = "https://dlf-agency.skool-203.workers.dev"
+MCP_SERVER = os.environ.get("GHL_TOKEN_SERVER", "https://dlf-agency.skool-203.workers.dev")
 FIREBASE_API_KEY = "AIzaSyB_w3vXmsI7WeQtrIOkjR6xTRVN5uOieiE"
 CTX = ssl.create_default_context()
 
@@ -226,12 +226,16 @@ class GHLClient:
 # ── Email Formatter ───────────────────────────────────────────────────────────
 
 def dm_email(text: str) -> str:
-    """Convert plain text to Dan Martell style HTML email."""
+    """Convert plain text to Dan Martell style HTML email.
+
+    Blank lines become spacer breaks for breathing room between paragraphs.
+    """
     lines = text.strip().split('\n')
     html_parts = []
     for line in lines:
         line = line.strip()
         if not line:
+            html_parts.append('<br>')
             continue
         line = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', line)
         line = re.sub(r'\*(.+?)\*', r'<em>\1</em>', line)

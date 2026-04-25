@@ -1,33 +1,18 @@
-# Claude Code Instructions
-
-## After completing any significant work, log it:
-
-```python
-# Run this to log your work to the Command Center
-import urllib.request, json, base64
-from datetime import datetime
-
-GH_TOKEN = "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"
-
-entry = {
-    "repo": "drleadflow/ghl-superspeed-v3",
-    "message": "DESCRIBE_WHAT_YOU_BUILT",
-    "by": "claude-code",
-    "timestamp": datetime.utcnow().isoformat() + "Z",
-    "details": "OPTIONAL_DETAILS"
-}
-
-# Append to blade-ops dev activity log
-# (fetch current, prepend entry, push back)
-```
+# GHL SuperSpeed v3
 
 ## Project Context
-- This is a Dr. Lead Flow project
-- Owner: Blade (Emeka Ajufo)
-- All work feeds into the Command Center at https://blade-command-center.vercel.app
-- Log significant completions to blade-ops/logs/dev-activity.json
+- Programmatic GHL workflow builder via Firebase-authenticated internal API
+- Zero dependencies — pure Python stdlib
+- Config via .env file (see .env.example)
+- Token server: Cloudflare Worker in token-server/
+- Multi-account support via per-account env files (.env.aisimple, .env.leveragedva, etc.)
 
-## Standards
-- Commit messages should be descriptive
-- After major features, update blade-ops/projects/ if relevant
-- Reference blade-ops task files when completing tracked work
+## Quick Start
+1. Copy .env.example to .env (or .env.<account-name>) and fill in your GHL credentials
+2. Deploy token-server/ to Cloudflare Workers (or use a refresh token directly)
+3. Run: `export $(grep -v '^#' .env.<account> | xargs) && python3 campaigns/my-campaign.py`
+
+## Origin
+This repo was forked from https://github.com/drleadflow/ghl-superspeed-v3 (Emeka Ajufo / Dr. Lead Flow).
+That upstream is kept here as historical reference only — it is no longer pulled from.
+This repo (Vibe-Marketer/ghl-superspeed-v3) is the active AI Simple version and diverges intentionally.

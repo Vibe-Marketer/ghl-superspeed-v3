@@ -1,0 +1,12 @@
+name = "ghl-token-server"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+
+[vars]
+FIREBASE_API_KEY = "AIzaSyB_w3vXmsI7WeQtrIOkjR6xTRVN5uOieiE"
+
+# ADMIN_PIN is set via `wrangler secret put ADMIN_PIN`
+
+[[kv_namespaces]]
+binding = "TOKEN_STORE"
+id = "ba44c1c16a254ee6aee70dc92b451939"

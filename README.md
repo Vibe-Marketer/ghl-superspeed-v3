@@ -311,7 +311,6 @@ ghl-superspeed-v3/
   tests/verify_consolidated.py  Consolidated 6-workflow verification test
   scripts/refresh-token.sh   Firebase JWT refresh helper
   templates/blueprints.json  Campaign blueprint templates
-  chrome-extension/          Chrome extension for passive token capture
 ```
 
 ---
