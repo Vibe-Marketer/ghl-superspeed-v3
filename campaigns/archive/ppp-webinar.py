@@ -8,7 +8,7 @@ Usage:
 """
 
 import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from lib.engine import (
     TokenManager, GHLClient, CampaignBuilder,
@@ -17,10 +17,14 @@ from lib.engine import (
 
 # ── Config ────────────────────────────────────────────────────────────────────
 
-LOCATION_ID = "2hP6rCb3COd2HUjD25w2"  # Christians Testing
-PARENT_FOLDER = "ca2666ec-84af-4155-9d0a-1774430c98b7"  # ++ Agent Testing
-COMPANY_ID = "R1HWQKyMMoj4PJ5mAYed"
-USER_ID = "YewkebOufK3hmeP1gx4B"
+LOCATION_ID = os.environ.get("GHL_LOCATION_ID", "")
+COMPANY_ID = os.environ.get("GHL_COMPANY_ID", "")
+USER_ID = os.environ.get("GHL_USER_ID", "")
+PARENT_FOLDER = os.environ.get("GHL_PARENT_FOLDER", "")  # → AI GENERATED - STAGING
+
+if not all([LOCATION_ID, COMPANY_ID, USER_ID]):
+    sys.exit("ERROR: Missing env vars. Run: python3 scripts/setup-account.py <account> "
+             "then: export $(grep -v '^#' .env.<account> | xargs)")
 
 # ── Campaign Definition ───────────────────────────────────────────────────────
 
