@@ -31,26 +31,23 @@ STRIP_KEYS = frozenset([
     'isTriggerBucketMigrated', 'permissionMeta',
 ])
 
-# ── Verified Action Types (56 confirmed via save API 2026-03-22) ──────────
+# ── Verified Action + Trigger Types (loaded from canonical JSON) ──────────
+# DO NOT EDIT. Synced from /Users/Naegele/dev/ghl-automation-builder/verified/types.json.
+# Run scripts/sync-types.sh to update.
 
-VERIFIED_ACTIONS = frozenset([
-    'add_contact_tag', 'remove_contact_tag', 'update_contact_field',
-    'create_update_contact', 'assign_user', 'remove_assigned_user',
-    'edit_conversation', 'dnd_contact', 'add_notes', 'task-notification',
-    'find_contact', 'sms', 'email', 'call', 'voicemail', 'messenger', 'gmb',
-    'internal_notification', 'instagram-dm', 'ig_interactive_messenger',
-    'fb_interactive_messenger', 'respond_on_comment', 'review_request',
-    'wait', 'if_else', 'goto', 'transition', 'workflow_split', 'workflow_goal',
-    'add_to_workflow', 'remove_from_workflow', 'remove_from_all_workflows',
-    'update_custom_value', 'drip', 'chatgpt', 'conversation_ai',
-    'create_opportunity', 'find_opportunity', 'remove_opportunity',
-    'webhook', 'custom_webhook', 'google_sheets', 'slack_message',
-    'custom_code', 'math_operation', 'text_formatter', 'number_formatter',
-    'datetime_formatter', 'array_functions', 'ivr_gather', 'ivr_connect_call',
-    'facebook_conversion_api', 'stripe_one_time_charge',
-    'update_appointment_status', 'membership_grant_offer',
-    'membership_revoke_offer',
-])
+_VERIFIED_TYPES_PATH = os.path.join(os.path.dirname(__file__), "verified-types.json")
+try:
+    with open(_VERIFIED_TYPES_PATH, "r") as _f:
+        _VERIFIED_TYPES = json.load(_f)
+except FileNotFoundError:
+    raise FileNotFoundError(
+        f"Verified types file not found at {_VERIFIED_TYPES_PATH}. "
+        f"Run scripts/sync-types.sh to sync from "
+        f"/Users/Naegele/dev/ghl-automation-builder/verified/types.json"
+    )
+
+VERIFIED_ACTIONS = frozenset(_VERIFIED_TYPES["actions"]["types"])
+VERIFIED_TRIGGERS = frozenset(_VERIFIED_TYPES["triggers"]["types"])
 
 
 # ── Auth ──────────────────────────────────────────────────────────────────────
