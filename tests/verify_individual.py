@@ -4,7 +4,7 @@ PHASE 1: Individual verification of every action type and trigger type.
 Tests each one in its own workflow so failures are isolated.
 
 Usage:
-    export GHL_FIREBASE_TOKEN=$(curl -s "https://dlf-agency.skool-203.workers.dev/cli/token?pin=YOUR_PIN" | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
+    export GHL_FIREBASE_TOKEN=$(curl -s "$GHL_TOKEN_SERVER/cli/token?pin=$GHL_ADMIN_PIN" | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
     python3 tests/verify_individual.py
 """
 
@@ -13,9 +13,13 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from lib.engine import TokenManager, GHLClient
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-LOC = "2hP6rCb3COd2HUjD25w2"
-PARENT_FOLDER = "ca2666ec-84af-4155-9d0a-1774430c98b7"
-USER = "YewkebOufK3hmeP1gx4B"
+LOC = os.environ.get("GHL_LOCATION_ID", "")
+PARENT_FOLDER = os.environ.get("GHL_TEST_FOLDER", "")  # Tests land in TEST WORKFLOWS folder
+USER = os.environ.get("GHL_USER_ID", "")
+
+if not all([LOC, USER, PARENT_FOLDER]):
+    sys.exit("ERROR: Missing env vars. Run: python3 scripts/setup-account.py <account> "
+             "then: export $(grep -v '^#' .env.<account> | xargs)")
 
 def uid():
     return str(uuid.uuid4())

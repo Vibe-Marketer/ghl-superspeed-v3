@@ -69,7 +69,8 @@ You'll receive an ADMIN_PIN. Then:
 ```bash
 # One-liner to get a fresh token (valid ~55 min, auto-refreshes)
 export GHL_ADMIN_PIN="your-pin"
-export GHL_FIREBASE_TOKEN=$(curl -s "https://dlf-agency.skool-203.workers.dev/cli/token?pin=$GHL_ADMIN_PIN" | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
+export GHL_TOKEN_SERVER="https://your-worker.your-subdomain.workers.dev"
+export GHL_FIREBASE_TOKEN=$(curl -s "$GHL_TOKEN_SERVER/cli/token?pin=$GHL_ADMIN_PIN" | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
 ```
 
 #### Option B: Firebase Refresh Token (Self-hosted, never expires)
@@ -335,9 +336,9 @@ With MCP access, you get 18 workflow builder tools in Claude Code. Add to `.mcp.
 ```json
 {
   "mcpServers": {
-    "dlf-agency": {
+    "ghl-token-server": {
       "type": "url",
-      "url": "https://dlf-agency.skool-203.workers.dev/mcp"
+      "url": "https://your-worker.your-subdomain.workers.dev/mcp"
     }
   }
 }

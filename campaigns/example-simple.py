@@ -9,7 +9,7 @@ Creates 2 workflows:
 Usage:
     # Option A: MCP token (recommended)
     export GHL_ADMIN_PIN="your-pin"
-    export GHL_FIREBASE_TOKEN=$(curl -s "https://dlf-agency.skool-203.workers.dev/cli/token?pin=$GHL_ADMIN_PIN" | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
+    export GHL_FIREBASE_TOKEN=$(curl -s "$GHL_TOKEN_SERVER/cli/token?pin=$GHL_ADMIN_PIN" | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
     python3 campaigns/example-simple.py
 
     # Option B: Manual token
@@ -31,10 +31,14 @@ from lib.engine import (
 
 # ── EDIT THESE ───────────────────────────────────────────────────────────────
 
-LOCATION_ID = "2hP6rCb3COd2HUjD25w2"  # Your GHL location ID
-COMPANY_ID = "R1HWQKyMMoj4PJ5mAYed"   # Your company ID (from GHL URL)
-USER_ID = "YewkebOufK3hmeP1gx4B"      # Your user ID (from GHL)
-PARENT_FOLDER = ""                      # Leave empty for root, or set folder ID
+LOCATION_ID = os.environ.get("GHL_LOCATION_ID", "")
+COMPANY_ID = os.environ.get("GHL_COMPANY_ID", "")
+USER_ID = os.environ.get("GHL_USER_ID", "")
+PARENT_FOLDER = os.environ.get("GHL_PARENT_FOLDER", "")  # Real campaigns → AI GENERATED - STAGING
+
+if not all([LOCATION_ID, COMPANY_ID, USER_ID]):
+    sys.exit("ERROR: Missing env vars. Run: python3 scripts/setup-account.py <account> "
+             "then: export $(grep -v '^#' .env.<account> | xargs)")
 
 # ── DEFINE YOUR CAMPAIGN ─────────────────────────────────────────────────────
 

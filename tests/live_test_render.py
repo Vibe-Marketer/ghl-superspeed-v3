@@ -17,10 +17,14 @@ from lib.engine import (
     wait_step, tag_step, sms_step, link_steps,
 )
 
-LOC = "2hP6rCb3COd2HUjD25w2"
-COMPANY = "R1HWQKyMMoj4PJ5mAYed"
-USER = "YewkebOufK3hmeP1gx4B"
-TEST_FOLDER = "ca2666ec-84af-4155-9d0a-1774430c98b7"
+LOC = os.environ.get("GHL_LOCATION_ID", "")
+COMPANY = os.environ.get("GHL_COMPANY_ID", "")
+USER = os.environ.get("GHL_USER_ID", "")
+TEST_FOLDER = os.environ.get("GHL_TEST_FOLDER", "")
+
+if not all([LOC, COMPANY, USER, TEST_FOLDER]):
+    sys.exit("ERROR: Missing env vars. Run: python3 scripts/setup-account.py <account> "
+             "then: export $(grep -v '^#' .env.<account> | xargs)")
 
 def main():
     # Auth

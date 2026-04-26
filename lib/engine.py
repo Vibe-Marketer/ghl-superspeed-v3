@@ -18,7 +18,7 @@ from typing import Optional
 # ── Config ────────────────────────────────────────────────────────────────────
 
 BASE_URL = "https://backend.leadconnectorhq.com"
-MCP_SERVER = os.environ.get("GHL_TOKEN_SERVER", "https://dlf-agency.skool-203.workers.dev")
+MCP_SERVER = os.environ.get("GHL_TOKEN_SERVER", "")
 FIREBASE_API_KEY = "AIzaSyB_w3vXmsI7WeQtrIOkjR6xTRVN5uOieiE"
 CTX = ssl.create_default_context()
 
