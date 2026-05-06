@@ -20,7 +20,7 @@ CAMPAIGN = {
         "templates": link_steps([
             sms_step("Welcome", "Hey {{contact.first_name}}, welcome!"),
             wait_step("1 day", 1, "days"),
-            email_step("Follow Up", "checking in", "Your follow-up email text here", "Dr. Name"),
+            email_step("Follow Up", "checking in", "Your follow-up email text here", "Your Team"),
             wait_step("2 hours", 2, "hours"),
             tag_step("Mark Done", ["welcome-complete"]),
         ]),
@@ -102,16 +102,18 @@ This expires in 1 hour. Fine for testing, not for production.
 
 ### Step 3: Set Your Location
 
-Edit your campaign file with your GHL location ID:
+Set account values in `.env` or `.env.<account>`:
 
-```python
-LOCATION_ID = "your-location-id"  # From GHL URL: app.gohighlevel.com/location/THIS_PART/...
+```bash
+GHL_LOCATION_ID=your-location-id
+GHL_COMPANY_ID=your-company-id
+GHL_USER_ID=your-user-id
 ```
 
 ### Step 4: Run
 
 ```bash
-python3 campaigns/ppp-webinar.py
+python3 campaigns/webinar-funnel.py
 ```
 
 ---
@@ -240,26 +242,35 @@ CAMPAIGN = {
 ### 1. Create a new file
 
 ```bash
-cp campaigns/ppp-webinar.py campaigns/my-campaign.py
+cp campaigns/webinar-funnel.py campaigns/my-webinar.py
 ```
 
 ### 2. Edit the config
 
-```python
-LOCATION_ID = "your-location-id"
-PARENT_FOLDER = ""  # Leave empty for root, or set a folder ID
-COMPANY_ID = "your-company-id"
-USER_ID = "your-user-id"
+Set campaign variables in `.env.<account>` or export them before running:
+
+```bash
+CAMPAIGN_NAME=Client Webinar Funnel
+CAMPAIGN_BUSINESS_NAME=Client Business
+CAMPAIGN_SENDER_NAME=Client Team
+CAMPAIGN_SERVICE_CATEGORY=the client's services
+CAMPAIGN_WEBINAR_TITLE=The Growth System Workshop
+CAMPAIGN_WEBINAR_TIME=7 PM ET
+CAMPAIGN_WEBINAR_LINK={{custom_values.webinar_link}}
+CAMPAIGN_OFFER_NAME=Implementation Program
+CAMPAIGN_PRICE_TEXT=your enrollment option
+CAMPAIGN_DEADLINE_TEXT=Sunday at midnight
 ```
 
-### 3. Define your workflows
+### 3. Customize your workflows
 
 Use `sms_step()`, `email_step()`, `wait_step()`, and `tag_step()` inside `link_steps()`.
 
 ### 4. Run
 
 ```bash
-GHL_FIREBASE_TOKEN="your-token" python3 campaigns/my-campaign.py
+set -a && source .env.<account> && set +a
+python3 campaigns/my-webinar.py
 ```
 
 ### 5. Verify in GHL
@@ -274,7 +285,7 @@ Open the workflow URLs printed in the output:
 
 | Campaign | Workflows | Steps | Triggers | Time | API Calls |
 |----------|-----------|-------|----------|------|-----------|
-| PPP Webinar | 8 | 45 | 8 | 3.2s | 58 |
+| Webinar Funnel | 8 | 45 | 8 | 3.2s | 58 |
 | Single workflow | 1 | 5 | 1 | 0.8s | 8 |
 
 Speed comes from `ThreadPoolExecutor` — all workflows run their full 6-step pipeline simultaneously.
@@ -308,7 +319,7 @@ Use the `token-id` header with a Firebase JWT. NOT `Authorization: Bearer`. Ever
 ```
 ghl-superspeed-v3/
   lib/engine.py              Core engine (TokenManager, GHLClient, CampaignBuilder, step builders)
-  campaigns/ppp-webinar.py   Example: 8-workflow webinar campaign
+  campaigns/webinar-funnel.py Reusable 8-workflow webinar campaign
   tests/test_engine.py       28 unit tests (all passing)
   tests/verify_individual.py Live API verification for all 56 action types
   tests/verify_consolidated.py  Consolidated 6-workflow verification test

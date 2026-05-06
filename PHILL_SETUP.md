@@ -75,16 +75,37 @@ Expected result: the script authenticates, creates a small example campaign unde
 
 ## 6. Build Phill's First Campaign
 
-Copy the starter campaign:
+For a simple follow-up campaign, copy the starter campaign:
 
 ```bash
 cp campaigns/my-campaign.py campaigns/phill-campaign.py
 ```
 
-Edit `campaigns/phill-campaign.py`, then run:
+For a full webinar funnel, copy the reusable webinar template:
+
+```bash
+cp campaigns/webinar-funnel.py campaigns/phill-webinar.py
+```
+
+Set campaign-specific values in `.env.phill` before running a real campaign:
+
+```bash
+CAMPAIGN_NAME=Phill Webinar Funnel
+CAMPAIGN_BUSINESS_NAME=Phill Business
+CAMPAIGN_SENDER_NAME=Phill Team
+CAMPAIGN_SERVICE_CATEGORY=Phill's services
+CAMPAIGN_WEBINAR_TITLE=The Growth System Workshop
+CAMPAIGN_WEBINAR_LINK={{custom_values.webinar_link}}
+CAMPAIGN_OFFER_NAME=Implementation Program
+CAMPAIGN_TAG_PREFIX=phill-webinar
+```
+
+Edit the copied campaign if needed, then run:
 
 ```bash
 python3 campaigns/phill-campaign.py
+# or
+python3 campaigns/phill-webinar.py
 ```
 
 Generated campaigns should land in `AI GENERATED - STAGING` first. Review them in GHL before moving or enabling them for production traffic.

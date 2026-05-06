@@ -35,6 +35,10 @@ LOCATION_ID = os.environ.get("GHL_LOCATION_ID", "")
 COMPANY_ID = os.environ.get("GHL_COMPANY_ID", "")
 USER_ID = os.environ.get("GHL_USER_ID", "")
 PARENT_FOLDER = os.environ.get("GHL_PARENT_FOLDER", "")  # Real campaigns → AI GENERATED - STAGING
+CAMPAIGN_NAME = os.environ.get("CAMPAIGN_NAME", "Example Follow-Up Campaign")
+BUSINESS_NAME = os.environ.get("CAMPAIGN_BUSINESS_NAME", "Your Business")
+SENDER_NAME = os.environ.get("CAMPAIGN_SENDER_NAME", "Your Team")
+SERVICE_CATEGORY = os.environ.get("CAMPAIGN_SERVICE_CATEGORY", "your services")
 
 if not all([LOCATION_ID, COMPANY_ID, USER_ID]):
     sys.exit("ERROR: Missing env vars. Run: python3 scripts/setup-account.py <account> "
@@ -52,18 +56,21 @@ CAMPAIGN = {
             wait_step("1 day", 1, "days"),
             email_step("Welcome Email",
                 "welcome aboard",
-                """Hey {{contact.first_name}},
+                f"""Hey {{{{contact.first_name}}}},
 
 Thanks for joining us!
 
 Here's what to expect over the next few days:
 
-We'll send you helpful info about our services.
+We'll send you helpful info about {SERVICE_CATEGORY}.
 
 If you have any questions, just reply to this email.
 
-Talk soon!""",
-                "Your Name"),
+Talk soon!
+
+- {SENDER_NAME}
+{BUSINESS_NAME}""",
+                SENDER_NAME),
             tag_step("Mark Welcome Done", ["welcome-complete"]),
         ]),
     },
@@ -76,14 +83,17 @@ Talk soon!""",
             wait_step("2 hours", 2, "hours"),
             email_step("Followup Email",
                 "quick follow-up",
-                """Hey {{contact.first_name}},
+                f"""Hey {{{{contact.first_name}}}},
 
 I wanted to follow up on my earlier message.
 
 If you're interested in learning more, just reply and we'll get you started.
 
-Thanks!""",
-                "Your Name"),
+Thanks!
+
+- {SENDER_NAME}
+{BUSINESS_NAME}""",
+                SENDER_NAME),
         ]),
     },
 }
@@ -92,7 +102,7 @@ Thanks!""",
 
 def main():
     total_steps = sum(len(wf["templates"]) for wf in CAMPAIGN.values())
-    print(f"Simple Example — {len(CAMPAIGN)} workflows, {total_steps} steps\n")
+    print(f"{CAMPAIGN_NAME} — {len(CAMPAIGN)} workflows, {total_steps} steps\n")
 
     token_mgr = TokenManager(LOCATION_ID)
     if os.environ.get("GHL_FIREBASE_REFRESH_TOKEN"):
@@ -110,7 +120,7 @@ def main():
     builder = CampaignBuilder(client, LOCATION_ID)
     stats = builder.build(
         CAMPAIGN,
-        folder_name="Example Campaign",
+        folder_name=CAMPAIGN_NAME,
         parent_folder=PARENT_FOLDER or None,
         company_id=COMPANY_ID,
         user_id=USER_ID,
