@@ -1,10 +1,10 @@
-# Phill Setup Handoff
+# AI Simple Phill Setup Handoff
 
-This is the short path for getting Phill running on his own GHL account without sharing your local `.env` files or tokens.
+This is the short path for getting Phill running on his own GHL account under the AI Simple setup, without sharing your local `.env` files or tokens.
 
 ## What Phill Needs
 
-- Access to this private GitHub repo: `Vibe-Marketer/ghl-superspeed-v3`
+- Access to the AI Simple private GitHub repo: `Vibe-Marketer/ghl-superspeed-v3`
 - Python 3.10+ installed
 - A GoHighLevel login for the target sub-account
 - These GHL values:
@@ -109,5 +109,5 @@ Ready state means:
 ## Notes
 
 - Do not commit `.env.phill` or any refresh token.
-- If Phill wants his own token server, deploy `token-server/` to his Cloudflare account and follow `token-server/README.md`.
+- If Phill wants his own token server, deploy the AI Simple `token-server/` worker to his Cloudflare account and follow `token-server/README.md`.
 - If auth fails, the first things to re-check are the refresh token, `GHL_LOCATION_ID`, and whether Phill's GHL user can access that location.

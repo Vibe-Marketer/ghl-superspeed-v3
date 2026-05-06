@@ -1,6 +1,6 @@
-# GHL SuperSpeed v3
+# AI Simple GHL SuperSpeed v3
 
-Build complete GHL workflow campaigns in seconds, not hours. Programmatic workflow creation via GHL's internal API with parallel execution.
+Build complete GHL workflow campaigns in seconds, not hours. Programmatic workflow creation for AI Simple clients via GHL's internal API with parallel execution.
 
 **Proven: 8 workflows, 45 steps, 8 triggers deployed in 3.2 seconds.**
 
@@ -60,11 +60,11 @@ No pip install needed. Zero dependencies — uses only Python stdlib.
 
 GHL's internal API uses Firebase JWT tokens (not OAuth). You need one of these auth methods:
 
-#### Option A: MCP Server (Recommended — auto-refresh, never expires)
+#### Option A: AI Simple Token Server (Recommended — auto-refresh, never expires)
 
-The DLF Agency MCP Server manages Firebase tokens automatically with a 55-minute KV cache and auto-refresh.
+The AI Simple token server manages Firebase tokens automatically with a 55-minute KV cache and auto-refresh.
 
-**To get access:** Email **info@doctorleadflow.com** with subject "SuperSpeed Access Request"
+Ask your AI Simple admin for the token server URL and `ADMIN_PIN`.
 
 You'll receive an ADMIN_PIN. Then:
 
@@ -346,7 +346,7 @@ With MCP access, you get 18 workflow builder tools in Claude Code. Add to `.mcp.
 }
 ```
 
-For MCP access: **info@doctorleadflow.com**
+For MCP access, ask your AI Simple admin for the deployed worker URL.
 
 ---
 
@@ -360,4 +360,4 @@ python3 tests/test_engine.py     # 28 unit tests, no API calls
 
 ## License
 
-Private. Contact info@doctorleadflow.com for access.
+Private. AI Simple internal and client use only.

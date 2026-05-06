@@ -1,4 +1,4 @@
-# GHL SuperSpeed v3
+# AI Simple GHL SuperSpeed v3
 
 ## Project Context
 - Programmatic GHL workflow builder via Firebase-authenticated internal API
@@ -31,13 +31,11 @@ When you discover a new working type:
 2. MCP token server (`GHL_TOKEN_SERVER` + `GHL_ADMIN_PIN`) — issues fresh Firebase JWT
 3. Direct Firebase refresh (`GHL_FIREBASE_REFRESH_TOKEN`) → calls `securetoken.googleapis.com`
 
-The test-brokerage env uses path 3 (refresh token only). Aisimple env uses path 2.
+The test-brokerage env uses path 3 (refresh token only). The AI Simple env uses path 2.
 
 ## Verified — End-to-End Test (2026-04-25)
 Ran `python3 campaigns/example-simple.py` against test-brokerage location `6KFX17XItaklbgvQZjEP` →
 2 workflows, 7 steps, 2 triggers deployed in 3.8s with 0 errors.
 
-## Origin
-This repo was forked from https://github.com/drleadflow/ghl-superspeed-v3 (Emeka Ajufo / Dr. Lead Flow).
-That upstream is kept here as historical reference only — it is no longer pulled from.
-This repo (Vibe-Marketer/ghl-superspeed-v3) is the active AI Simple version and diverges intentionally.
+## Ownership
+This repo is the active AI Simple version. Customer-facing docs and examples should stay branded under AI Simple.

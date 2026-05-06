@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-PPP Webinar Campaign — v3 SuperSpeed Engine
+AI Simple Webinar Campaign — v3 SuperSpeed Engine
 8 workflows, 45 steps, all triggers — built with parallel execution.
 
 Usage:
@@ -45,7 +45,7 @@ Running a practice. Managing staff. Seeing patients. AND trying to figure out ma
 
 That's like asking a pilot to also build the plane while flying it.
 
-I'm Dr. Emeka.
+I'm with AI Simple.
 
 I've spent the last few years building AI systems that do the marketing part for you.
 
@@ -59,7 +59,7 @@ No fluff. No theory. Just what's working right now for practices like yours.
 
 Talk soon.
 
-— Dr. Emeka""", "Dr. Emeka"),
+- AI Simple""", "AI Simple"),
             wait_step("1 day (Tuesday)", 1, "days"),
             email_step("Tue - $20K to $131K", "$20K to $131K in 90 days", """Hey {{contact.first_name}},
 
@@ -93,7 +93,7 @@ They installed a system.
 
 That's the difference between a practice that grows and one that grinds.
 
-— Dr. Emeka""", "Dr. Emeka"),
+- AI Simple""", "AI Simple"),
             wait_step("1 day (Wednesday)", 1, "days"),
             email_step("Wed - I've tried ads before", "\"I've tried ads before\"", """Hey {{contact.first_name}},
 
@@ -135,7 +135,7 @@ No pitch for the first 60 minutes. Just the system.
 
 Reply "WEBINAR" and I'll send you the link.
 
-— Dr. Emeka""", "Dr. Emeka"),
+- AI Simple""", "AI Simple"),
             wait_step("1 day (Thursday AM)", 1, "days"),
             email_step("Thu - This Thursday", "this Thursday", """Hey {{contact.first_name}},
 
@@ -165,14 +165,14 @@ But if you've read this far, something's telling you it's time.
 
 Listen to that.
 
-— Dr. Emeka""", "Dr. Emeka"),
+- AI Simple""", "AI Simple"),
         ]),
     },
     "02": {
         "name": "02. Webinar Confirmation",
         "tag": "webinar-registered",
         "templates": link_steps([
-            sms_step("Registration Confirmed", "Hey {{contact.first_name}}, you're registered for Thursday's LIVE training:\n\n\"The Predictable Patient Pipeline Method\" — 7 PM ET.\n\nI'm going to show you the exact AI system that helped a med spa go from $20K to $131K/month.\n\nSave the date: This Thursday at 7 PM ET\n\n— Dr. Emeka"),
+            sms_step("Registration Confirmed", "Hey {{contact.first_name}}, you're registered for Thursday's LIVE training:\n\n\"The Predictable Patient Pipeline Method\" — 7 PM ET.\n\nI'm going to show you the exact AI system that helped a med spa go from $20K to $131K/month.\n\nSave the date: This Thursday at 7 PM ET\n\n- AI Simple"),
             email_step("You're In", "you're in", """Hey {{contact.first_name}},
 
 You just made a decision most practice owners never make.
@@ -191,14 +191,14 @@ Show up on time. I start at 7 PM sharp.
 
 See you Thursday.
 
-— Dr. Emeka""", "Dr. Emeka"),
+- AI Simple""", "AI Simple"),
         ]),
     },
     "03": {
         "name": "03. Day-Of Reminders (Thu)",
         "tag": "webinar-registered",
         "templates": link_steps([
-            sms_step("Thu 9 AM", "Today's the day, {{contact.first_name}}!\n\nThe Predictable Patient Pipeline LIVE training is tonight at 7 PM ET.\n\nSee you at 7!\n— Dr. Emeka"),
+            sms_step("Thu 9 AM", "Today's the day, {{contact.first_name}}!\n\nThe Predictable Patient Pipeline LIVE training is tonight at 7 PM ET.\n\nSee you at 7!\n- AI Simple"),
             wait_step("9 hours", 9, "hours"),
             sms_step("Thu 6 PM", "We start in 60 minutes!\n\nHave your questions ready — I'm doing live Q&A at the end."),
             wait_step("30 min", 30, "minutes"),
@@ -216,7 +216,7 @@ Everyone who attends live gets the Pipeline Blueprint free.
 
 See you in 30.
 
-— Dr. Emeka""", "Dr. Emeka"),
+- AI Simple""", "AI Simple"),
             wait_step("30 min", 30, "minutes"),
             sms_step("Thu 7 PM LIVE", "We're LIVE!\n\nI'm starting with the $131K med spa breakdown. Don't miss the first 10 minutes."),
         ]),
@@ -225,7 +225,7 @@ See you in 30.
         "name": "04. Attendee Follow-Up (Thu-Sun)",
         "tag": "webinar-attended",
         "templates": link_steps([
-            sms_step("Thu Thanks", "Hey {{contact.first_name}}, thanks for showing up tonight!\n\nIf you want to lock in the live bonus, it expires Sunday at midnight.\n\nAny questions? Just text me back.\n— Dr. Emeka"),
+            sms_step("Thu Thanks", "Hey {{contact.first_name}}, thanks for showing up tonight!\n\nIf you want to lock in the live bonus, it expires Sunday at midnight.\n\nAny questions? Just text me back.\n- AI Simple"),
             email_step("Thu Recap", "thanks for showing up tonight", """Hey {{contact.first_name}},
 
 Thank you for spending your evening with me.
@@ -246,7 +246,7 @@ $997. Or 3 payments of $397.
 
 If you have questions, just reply.
 
-— Dr. Emeka""", "Dr. Emeka"),
+- AI Simple""", "AI Simple"),
             wait_step("14 hours (Fri AM)", 14, "hours"),
             sms_step("Fri Case Study", "Hey {{contact.first_name}}, after last night I wanted to share something.\n\nThe Houston med spa got their first 12 appointments in the FIRST WEEK.\n\nWeek one. Not month one.\n\nLive bonus expires Sunday midnight."),
             email_step("Fri Deep Dive", "what happened in the first week", """Hey {{contact.first_name}},
@@ -265,7 +265,7 @@ If the system books you just 2 extra patients this month, it's paid for itself.
 
 The live bonus expires Sunday midnight.
 
-— Dr. Emeka""", "Dr. Emeka"),
+- AI Simple""", "AI Simple"),
             wait_step("24 hours (Sat)", 24, "hours"),
             sms_step("Sat Social Proof", "{{contact.first_name}}, a practice owner from Thursday's webinar just sent me this:\n\n\"I was skeptical but I signed up Friday morning. The custom ads were in my inbox by Saturday afternoon.\"\n\nLive bonus expires TOMORROW at midnight."),
             email_step("Sat Proof", "\"I was skeptical, but...\"", """Hey {{contact.first_name}},
@@ -280,7 +280,7 @@ It's "buy and we build it together."
 
 The live bonus expires tomorrow at midnight.
 
-— Dr. Emeka""", "Dr. Emeka"),
+- AI Simple""", "AI Simple"),
             wait_step("24 hours (Sun AM)", 24, "hours"),
             sms_step("Sun Last Day", "Last day, {{contact.first_name}}.\n\nThe Pipeline Program live bonus expires at midnight tonight.\n\nAfter tonight:\n- No private Slack with me\n- No done-for-you campaign setup"),
             email_step("Sun Closing", "closing tonight at midnight", """Hey {{contact.first_name}},
@@ -299,20 +299,20 @@ $997. Or 3 payments of $397.
 
 This is the last email about Thursday's offer.
 
-— Dr. Emeka""", "Dr. Emeka"),
+- AI Simple""", "AI Simple"),
             wait_step("11 hours (Sun 9 PM)", 11, "hours"),
             email_step("3 hours", "3 hours", """{{contact.first_name}},
 
 3 hours.
 
-— Dr. Emeka""", "Dr. Emeka"),
+- AI Simple""", "AI Simple"),
         ]),
     },
     "05": {
         "name": "05. No-Show Replay",
         "tag": "webinar-no-show",
         "templates": link_steps([
-            sms_step("Thu Replay", "Hey {{contact.first_name}}, we missed you tonight!\n\nI recorded the whole thing — including the $20K to $131K/month case study.\n\nWatch the replay (72 hours).\n— Dr. Emeka"),
+            sms_step("Thu Replay", "Hey {{contact.first_name}}, we missed you tonight!\n\nI recorded the whole thing — including the $20K to $131K/month case study.\n\nWatch the replay (72 hours).\n- AI Simple"),
             email_step("Thu Replay", "you missed it — but I saved it for you", """Hey {{contact.first_name}},
 
 I know life gets busy.
@@ -325,7 +325,7 @@ The replay is 90 minutes. Most valuable section starts at the 30-minute mark.
 
 Everyone who watches gets the Pipeline Blueprint.
 
-— Dr. Emeka""", "Dr. Emeka"),
+- AI Simple""", "AI Simple"),
             wait_step("16 hours (Fri noon)", 16, "hours"),
             sms_step("Fri Nudge", "{{contact.first_name}}, did you catch the replay yet?\n\nThe SPY Method section alone is worth your time.\n\nReplay comes down Sunday."),
             wait_step("22 hours (Sat AM)", 22, "hours"),
@@ -336,7 +336,7 @@ The Predictable Patient Pipeline replay comes down tomorrow at midnight.
 
 If you haven't watched yet, the most valuable section starts at the 30-minute mark.
 
-— Dr. Emeka""", "Dr. Emeka"),
+- AI Simple""", "AI Simple"),
             wait_step("26 hours (Sun noon)", 26, "hours"),
             sms_step("Sun Final", "Last chance — the replay comes down at midnight tonight.\n\nAt minimum watch the 30-minute mark where I break down the 3 AI systems."),
         ]),
@@ -354,7 +354,7 @@ If you haven't watched yet, the most valuable section starts at the 30-minute ma
         "name": "07. Post-Cart Nurture",
         "tag": "webinar-no-buy",
         "templates": link_steps([
-            sms_step("Thanks", "Hey {{contact.first_name}}, thanks for checking out the Predictable Patient Pipeline training.\n\nI'll keep sharing free content — reply anytime.\n— Dr. Emeka"),
+            sms_step("Thanks", "Hey {{contact.first_name}}, thanks for checking out the Predictable Patient Pipeline training.\n\nI'll keep sharing free content — reply anytime.\n- AI Simple"),
             wait_step("3 days", 3, "days"),
             email_step("Quick Win", "a quick win you can use today", """Hey {{contact.first_name}},
 
@@ -370,14 +370,14 @@ Most practices respond in 24-48 hours. By then, the patient booked with someone 
 
 Try it this week.
 
-— Dr. Emeka""", "Dr. Emeka"),
+- AI Simple""", "AI Simple"),
         ]),
     },
     "08": {
         "name": "08. Purchase Exit (Remove All)",
         "tag": "pipeline-purchased",
         "templates": link_steps([
-            sms_step("Welcome", "Welcome to the Predictable Patient Pipeline Program, {{contact.first_name}}!\n\nYou made a great decision. I'll be in touch within 24 hours.\n\n— Dr. Emeka"),
+            sms_step("Welcome", "Welcome to the Predictable Patient Pipeline Program, {{contact.first_name}}!\n\nYou made a great decision. I'll be in touch within 24 hours.\n\n- AI Simple"),
         ]),
     },
 }
@@ -388,7 +388,7 @@ Try it this week.
 def main():
     # Count steps
     total_steps = sum(len(wf["templates"]) for wf in CAMPAIGN.values())
-    print(f"PPP Webinar Campaign — v3 SuperSpeed Engine")
+    print(f"AI Simple Webinar Campaign — v3 SuperSpeed Engine")
     print(f"{len(CAMPAIGN)} workflows, {total_steps} steps\n")
 
     # Init
@@ -410,7 +410,7 @@ def main():
     builder = CampaignBuilder(client, LOCATION_ID)
     stats = builder.build(
         CAMPAIGN,
-        folder_name="PPP Campaign v3",
+        folder_name="AI Simple Campaign v3",
         parent_folder=PARENT_FOLDER,
         company_id=COMPANY_ID,
         user_id=USER_ID,

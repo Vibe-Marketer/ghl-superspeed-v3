@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-GHL SuperSpeed Engine v3 — The fastest, most reliable GHL workflow builder.
+AI Simple GHL SuperSpeed Engine v3 — fast, reliable GHL workflow building.
 
 Combines:
-- Emeka's campaign-as-code pattern
+- Campaign-as-code workflow definitions
 - Our 56 verified type strings + Firebase auto-refresh
 - Parallel batch creation for maximum speed
 - AI campaign generation from plain English descriptions
