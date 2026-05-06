@@ -45,10 +45,12 @@ DONE in 1.1 seconds
 
 ## Setup (5 minutes)
 
+For a client handoff, see [PHILL_SETUP.md](PHILL_SETUP.md).
+
 ### Step 1: Clone
 
 ```bash
-git clone https://github.com/drleadflow/ghl-superspeed-v3.git
+git clone https://github.com/Vibe-Marketer/ghl-superspeed-v3.git
 cd ghl-superspeed-v3
 ```
 
