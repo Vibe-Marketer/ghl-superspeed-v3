@@ -10,10 +10,16 @@ Combines:
 - Pre-flight validation + post-deploy verification
 """
 
-import json, sys, os, re, ssl, time, uuid
+import json
+import os
+import re
+import ssl
+import sys
+import time
+import uuid
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Optional
+from typing import Any, Optional
 
 # ── Config ────────────────────────────────────────────────────────────────────
 
@@ -165,7 +171,9 @@ class GHLClient:
     def call_count(self) -> int:
         return self._call_count
 
-    def request(self, method: str, path: str, body: dict = None) -> Optional[dict]:
+    def request(
+        self, method: str, path: str, body: Optional[dict[str, Any]] = None
+    ) -> Optional[dict]:
         """Make an API request with auto-retry on 401."""
         token = self.token_mgr.get_token()
         result = self._do_request(method, path, body, token)
@@ -284,7 +292,9 @@ def tag_step(name: str, tags: list, remove: bool = False, **kw) -> dict:
     return {"id": _uid(), "type": t, "name": name,
             "attributes": {"tags": tags}, **kw}
 
-def webhook_step(name: str, url: str, method: str = "POST", data: list = None, **kw) -> dict:
+def webhook_step(
+    name: str, url: str, method: str = "POST", data: Optional[list] = None, **kw
+) -> dict:
     return {"id": _uid(), "type": "webhook", "name": name,
             "attributes": {"method": method, "url": url, "customData": data or [], "headers": []}, **kw}
 
@@ -301,7 +311,7 @@ def ai_step(name: str, prompt: str, model: str = "gpt-4o", **kw) -> dict:
 
 def link_steps(steps: list) -> list:
     """Auto-link steps with next/parentKey and set order."""
-    linked = []
+    linked: list[dict[str, Any]] = []
     for i, step in enumerate(steps):
         step = {**step}  # immutable copy
         step["order"] = i
@@ -354,7 +364,7 @@ class CampaignBuilder:
     def __init__(self, client: GHLClient, location_id: str):
         self.client = client
         self.loc = location_id
-        self.stats = {
+        self.stats: dict[str, Any] = {
             "workflows_created": 0,
             "steps_saved": 0,
             "triggers_created": 0,
@@ -363,7 +373,7 @@ class CampaignBuilder:
             "end_time": 0,
         }
 
-    def build(self, campaign: dict, folder_name: str, parent_folder: str = None,
+    def build(self, campaign: dict, folder_name: str, parent_folder: Optional[str] = None,
               company_id: str = "", user_id: str = "") -> dict:
         """Build an entire campaign. Returns stats."""
         self.stats["start_time"] = time.time()
@@ -590,7 +600,7 @@ class CampaignBuilder:
 
         # Print GHL links for manual trigger tag selection
         if wf_ids:
-            print(f"\nOpen in GHL to verify triggers:")
+            print("\nOpen in GHL to verify triggers:")
             for key in sorted(wf_ids.keys()):
                 wf_id = wf_ids[key]
                 tag = campaign[key].get("tag", "")

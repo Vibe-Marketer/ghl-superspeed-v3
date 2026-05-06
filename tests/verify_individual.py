@@ -8,7 +8,11 @@ Usage:
     python3 tests/verify_individual.py
 """
 
-import json, sys, os, time, uuid
+import json
+import os
+import sys
+import time
+import uuid
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from lib.engine import TokenManager, GHLClient
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -221,7 +225,8 @@ def main():
     print("Auth check...")
     token = tm.get_token()
     if not token:
-        print("FATAL: No token"); sys.exit(1)
+        print("FATAL: No token")
+        sys.exit(1)
     print("OK\n")
 
     # Create test folders
@@ -231,7 +236,8 @@ def main():
     trg_fid = trg_folder.get("id") if trg_folder else None
 
     if not act_fid or not trg_fid:
-        print("FATAL: Can't create folders"); sys.exit(1)
+        print("FATAL: Can't create folders")
+        sys.exit(1)
 
     # Create verify tag
     client.request("POST", f"/workflow/{LOC}/tags/create", {"tag": "verify-trigger"})
@@ -286,20 +292,20 @@ def main():
     print(f"  API calls: {client.call_count}")
 
     if act_fail:
-        print(f"\n  FAILED ACTIONS:")
+        print("\n  FAILED ACTIONS:")
         for t, s, d in sorted(action_results):
             if s == "FAIL":
                 print(f"    {t}: {d}")
 
     if trg_fail:
-        print(f"\n  FAILED TRIGGERS:")
+        print("\n  FAILED TRIGGERS:")
         for t, s, d in sorted(trigger_results):
             if s == "FAIL":
                 print(f"    {t}: {d}")
 
-    print(f"\n  Folders in GHL:")
+    print("\n  Folders in GHL:")
     print(f"    Actions: https://app.gohighlevel.com/location/{LOC}/automation")
-    print(f"    Look in ++ Agent Testing > __ VERIFY ACTIONS / __ VERIFY TRIGGERS")
+    print("    Look in ++ Agent Testing > __ VERIFY ACTIONS / __ VERIFY TRIGGERS")
 
     # Save results to JSON
     results = {
