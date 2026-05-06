@@ -1,0 +1,3 @@
+display_name: AI Simple GHL Workflows
+short_description: Build, preview, and deploy GHL workflows with AI Simple's verified workflow reference.
+default_prompt: Create a GHL workflow using the AI Simple workflow reference, preview it, validate it, and deploy it to staging.

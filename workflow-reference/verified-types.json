@@ -1,0 +1,176 @@
+{
+  "$schema": "https://aisimple.co/ghl-types-v1.json",
+  "version": "1.0.0",
+  "generated": "2026-04-25",
+  "description": "Canonical list of GHL workflow action and trigger type strings verified against the live internal API. Single source of truth — all consumers (ghl-mcp TypeScript, ghl-superspeed-v3 Python, docs) must read from this file. Update here, then run scripts/sync-types.sh to propagate.",
+  "sources": {
+    "actions": "Verified via GHL save API (action save validates strictly; 'corrupted type' 400 on mismatch). Confirmed in /Users/Naegele/dev/ghl-superspeed-v3/lib/engine.py VERIFIED_ACTIONS frozenset.",
+    "triggers": "Extracted from GHL workflow builder JS bundle (client-app-automation-workflows.leadconnectorhq.com). Documented in /Users/Naegele/dev/ghl-automation-builder/schemas/trigger-schemas.md. Trigger API does NOT validate type strings at save time — validation happens at execution."
+  },
+  "actions": {
+    "count": 56,
+    "types": [
+      "add_contact_tag",
+      "remove_contact_tag",
+      "update_contact_field",
+      "create_update_contact",
+      "assign_user",
+      "remove_assigned_user",
+      "edit_conversation",
+      "dnd_contact",
+      "add_notes",
+      "task-notification",
+      "find_contact",
+      "sms",
+      "email",
+      "call",
+      "voicemail",
+      "messenger",
+      "gmb",
+      "internal_notification",
+      "instagram-dm",
+      "ig_interactive_messenger",
+      "fb_interactive_messenger",
+      "respond_on_comment",
+      "review_request",
+      "wait",
+      "if_else",
+      "goto",
+      "transition",
+      "workflow_split",
+      "workflow_goal",
+      "add_to_workflow",
+      "remove_from_workflow",
+      "remove_from_all_workflows",
+      "update_custom_value",
+      "drip",
+      "chatgpt",
+      "conversation_ai",
+      "create_opportunity",
+      "find_opportunity",
+      "remove_opportunity",
+      "webhook",
+      "custom_webhook",
+      "google_sheets",
+      "slack_message",
+      "custom_code",
+      "math_operation",
+      "text_formatter",
+      "number_formatter",
+      "datetime_formatter",
+      "array_functions",
+      "ivr_gather",
+      "ivr_connect_call",
+      "facebook_conversion_api",
+      "stripe_one_time_charge",
+      "update_appointment_status",
+      "membership_grant_offer",
+      "membership_revoke_offer"
+    ]
+  },
+  "triggers": {
+    "count": 57,
+    "types": [
+      "contact_tag",
+      "contact_created",
+      "contact_changed",
+      "dnd_contact",
+      "birthday_reminder",
+      "customer_reply",
+      "call_status",
+      "mailgun_email_event",
+      "form_submission",
+      "survey_submission",
+      "trigger_link",
+      "video_event",
+      "appointment",
+      "customer_appointment",
+      "opportunity_status_changed",
+      "opportunity_created",
+      "opportunity_changed",
+      "pipeline_stage_updated",
+      "opportunity_decay",
+      "payment_received",
+      "invoice",
+      "order_submission",
+      "two_step_form_submission",
+      "shopify_abandoned_cart",
+      "shopify_order_placed",
+      "shopify_order_fulfilled",
+      "facebook_lead_gen",
+      "tik_tok_form_submitted",
+      "facebook_comment_on_post",
+      "ig_comment_on_post",
+      "membership_contact_created",
+      "category_started",
+      "category_completed",
+      "lesson_started",
+      "lesson_completed",
+      "offer_access_granted",
+      "offer_access_removed",
+      "product_access_granted",
+      "product_access_removed",
+      "product_started",
+      "product_completed",
+      "user_log_in",
+      "note_add",
+      "note_changed",
+      "task_added",
+      "task_due_date_reminder",
+      "manual_trigger",
+      "inbound_webhook",
+      "custom_date_reminder",
+      "scheduler_trigger",
+      "validation_error",
+      "affiliate_created",
+      "ivr_incoming_call",
+      "custom_object_created",
+      "custom_object_changed",
+      "conv_ai_trigger",
+      "conv_ai_autonomous_trigger"
+    ]
+  },
+  "criticalGotchas": [
+    {
+      "id": "version-required",
+      "rule": "PUT requests on workflows require an exact `version` field match. GHL increments on each save. Stale versions return 400."
+    },
+    {
+      "id": "action-type-strict",
+      "rule": "Action save API validates type strings strictly. Invalid types return 'corrupted type' 400. Use only types in actions.types."
+    },
+    {
+      "id": "trigger-type-permissive",
+      "rule": "Trigger save API does NOT validate type strings — validation happens at execution. Use triggers.types to be safe."
+    },
+    {
+      "id": "wait-hour-singular",
+      "rule": "Wait step unit must be `hour` (singular), `minutes` (plural), `days` (plural). `hours` (plural) renders value but not unit label."
+    },
+    {
+      "id": "trigger-target-action",
+      "rule": "After POST creating a trigger, PUT update it with `targetActionId` pointing to the first step ID. Without this, the trigger floats disconnected."
+    },
+    {
+      "id": "tags-must-pre-exist",
+      "rule": "Location tags must be created via POST /workflow/{loc}/tags/create BEFORE a trigger references them. Otherwise the tag renders blank."
+    },
+    {
+      "id": "auto-save-required",
+      "rule": "PUT /workflow/{loc}/{wfId}/auto-save syncs steps and triggers to Firebase Storage. Required for advanced canvas to render the workflow."
+    },
+    {
+      "id": "trigger-firebase-sync-delay",
+      "rule": "Triggers created via API stored in MongoDB but NOT immediately synced to Firebase Storage. get_triggers reads from Firebase, so new triggers invisible until full save/publish cycle."
+    }
+  ],
+  "doNotUse": {
+    "wrongTypeStrings": [
+      { "wrong": "create_contact", "right": "create_update_contact" },
+      { "wrong": "openai_completion", "right": "chatgpt" },
+      { "wrong": "split", "right": "workflow_split" },
+      { "wrong": "date_formatter", "right": "datetime_formatter" },
+      { "wrong": "internal_create_opportunity", "right": "create_opportunity" }
+    ]
+  }
+}

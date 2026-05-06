@@ -6,5 +6,6 @@ __pycache__/
 *.log
 results/
 runs/
+logs/
 chrome-extension/
 .DS_Store

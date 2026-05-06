@@ -47,6 +47,16 @@ DONE in 1.1 seconds
 
 For a client handoff, see [PHILL_SETUP.md](PHILL_SETUP.md).
 
+For non-technical users, use the launcher:
+
+```bash
+python3 ai-simple.py examples
+python3 ai-simple.py preview webinar-funnel
+python3 ai-simple.py configure phill
+python3 ai-simple.py deploy webinar-funnel --env .env.phill
+python3 ai-simple.py logs
+```
+
 ### Step 1: Clone
 
 ```bash
@@ -279,6 +289,36 @@ Open the workflow URLs printed in the output:
 - **Classic builder:** `https://app.gohighlevel.com/location/{locationId}/workflow/{workflowId}`
 - **Advanced canvas:** `https://app.gohighlevel.com/location/{locationId}/workflow/{workflowId}/advanced-canvas`
 
+Each deployment writes a local manifest under `logs/campaigns/` with the campaign name, location ID, folder ID, workflow IDs, trigger tags, step counts, links, stats, and errors. Logs are gitignored because they can contain client-specific operational data.
+
+---
+
+## Workflow Authoring Reference
+
+This package includes a curated local reference under `workflow-reference/`, synced from `ghl-automation-builder`:
+
+- `verified-types.json`
+- `action-schemas.md`
+- `trigger-schemas.md`
+- `data-schemas.md`
+- `save-modes.md`
+
+AI assistants should read this reference before creating custom workflows so they use verified GHL action/trigger types and valid step schemas.
+
+To resync from the local master reference:
+
+```bash
+./scripts/sync-workflow-reference.sh
+```
+
+---
+
+## AI Skill
+
+A portable AI assistant skill lives at `skill/ai-simple-ghl-workflows/`.
+
+Use it when you want Claude, Codex, or another assistant to create, preview, validate, and deploy workflows through this package. The skill includes its own bundled copy of the workflow reference so a client does not need the full `ghl-automation-builder` repo.
+
 ---
 
 ## Speed Benchmarks
@@ -318,8 +358,11 @@ Use the `token-id` header with a Firebase JWT. NOT `Authorization: Bearer`. Ever
 
 ```
 ghl-superspeed-v3/
+  ai-simple.py                Launcher for examples, preview, config, deploy, logs
   lib/engine.py              Core engine (TokenManager, GHLClient, CampaignBuilder, step builders)
   campaigns/webinar-funnel.py Reusable 8-workflow webinar campaign
+  workflow-reference/        Curated authoring reference from ghl-automation-builder
+  skill/ai-simple-ghl-workflows/  Portable AI assistant skill
   tests/test_engine.py       28 unit tests (all passing)
   tests/verify_individual.py Live API verification for all 56 action types
   tests/verify_consolidated.py  Consolidated 6-workflow verification test

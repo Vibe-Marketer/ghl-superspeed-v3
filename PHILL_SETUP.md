@@ -68,7 +68,8 @@ This test does not call GHL. It verifies the local workflow builder logic.
 ## 5. Run A Small Live Smoke Test
 
 ```bash
-python3 campaigns/example-simple.py
+python3 ai-simple.py preview example-simple --env .env.phill
+python3 ai-simple.py deploy example-simple --env .env.phill
 ```
 
 Expected result: the script authenticates, creates a small example campaign under `AI GENERATED - STAGING`, and prints GHL workflow URLs. Open the URLs in GHL and confirm the trigger and action steps render.
@@ -103,12 +104,24 @@ CAMPAIGN_TAG_PREFIX=phill-webinar
 Edit the copied campaign if needed, then run:
 
 ```bash
-python3 campaigns/phill-campaign.py
-# or
-python3 campaigns/phill-webinar.py
+python3 ai-simple.py preview phill-campaign --env .env.phill
+python3 ai-simple.py deploy phill-campaign --env .env.phill
+
+python3 ai-simple.py preview phill-webinar --env .env.phill
+python3 ai-simple.py deploy phill-webinar --env .env.phill
 ```
 
 Generated campaigns should land in `AI GENERATED - STAGING` first. Review them in GHL before moving or enabling them for production traffic.
+
+Deployment logs are written under `logs/campaigns/`. To review recent logs:
+
+```bash
+python3 ai-simple.py logs
+```
+
+## AI Workflow Skill
+
+The folder `skill/ai-simple-ghl-workflows/` can be installed or copied into an AI assistant's skill directory. It tells the assistant how to use this package, when to read `workflow-reference/`, how to validate campaigns, and how to deploy only to staging.
 
 ## Backup Status Checklist
 

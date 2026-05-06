@@ -1,6 +1,28 @@
 {
   "version": "1.0.0",
   "blueprints": {
+    "follow-up": {
+      "name": "Starter Follow-Up Campaign",
+      "description": "Simple welcome and follow-up sequence for new leads",
+      "workflows": 2,
+      "estimated_steps": 7,
+      "tags_needed": ["new-lead", "needs-followup"],
+      "structure": [
+        {"id": "welcome", "name": "Welcome Sequence", "steps": "1 sms + 1 wait + 1 email + 1 tag", "trigger": "new-lead"},
+        {"id": "followup", "name": "Follow-Up Sequence", "steps": "1 sms + 1 wait + 1 email", "trigger": "needs-followup"}
+      ]
+    },
+    "example-simple": {
+      "name": "Example Follow-Up Campaign",
+      "description": "Small smoke-test campaign with welcome and follow-up workflows",
+      "workflows": 2,
+      "estimated_steps": 7,
+      "tags_needed": ["new-lead", "needs-followup"],
+      "structure": [
+        {"id": "welcome", "name": "Welcome Sequence", "steps": "1 sms + 1 wait + 1 email + 1 tag", "trigger": "new-lead"},
+        {"id": "followup", "name": "Follow-Up Sequence", "steps": "1 sms + 1 wait + 1 email", "trigger": "needs-followup"}
+      ]
+    },
     "webinar-funnel": {
       "name": "Webinar Funnel",
       "description": "Complete webinar campaign: nurture → registration → reminders → follow-up → cart close",

@@ -10,7 +10,24 @@
 ## Quick Start
 1. Copy .env.example to .env (or .env.<account-name>) and fill in your GHL credentials
 2. Deploy token-server/ to Cloudflare Workers (or use a refresh token directly)
-3. Run: `set -a && source .env.<account> && set +a && python3 campaigns/your-campaign.py`
+3. Run: `python3 ai-simple.py examples`, `python3 ai-simple.py preview webinar-funnel`, then `python3 ai-simple.py deploy webinar-funnel --env .env.<account>`
+
+## Launcher
+
+Use `ai-simple.py` for non-technical client workflows:
+- `examples` lists available campaign templates.
+- `preview <template>` prints workflows, trigger tags, and steps without API calls.
+- `configure <client>` writes campaign values to `.env.<client>`.
+- `deploy <template> --env .env.<client>` deploys to the staging folder from env config.
+- `logs` lists recent deployment manifests from `logs/campaigns/`.
+
+Deployments write a JSON manifest with workflow IDs, tags, URLs, stats, and errors. Logs are gitignored.
+
+## AI Skill
+
+Portable skill: `skill/ai-simple-ghl-workflows/`
+
+Use it for AI assistants that need to create arbitrary workflows. The skill bundles reference files copied from `workflow-reference/`.
 
 ## Canonical Types (synced from ghl-automation-builder)
 
@@ -25,6 +42,8 @@ When you discover a new working type:
 1. Edit the MASTER (`ghl-automation-builder/verified/types.json`) and bump the count.
 2. Run `ghl-automation-builder/scripts/sync-types.sh` — copies to this repo + ghl-mcp.
 3. Commit both repos.
+
+For client package reference sync, run `./scripts/sync-workflow-reference.sh` after updating `ghl-automation-builder`.
 
 ## Auth Paths (priority order in TokenManager)
 1. Cached token if < 50 min old (in-memory)

@@ -19,6 +19,7 @@ import time
 import uuid
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
 from typing import Any, Optional
 
 # ── Config ────────────────────────────────────────────────────────────────────
@@ -373,6 +374,51 @@ class CampaignBuilder:
             "end_time": 0,
         }
 
+    def _write_campaign_log(
+        self,
+        folder_name: str,
+        folder_id: Optional[str],
+        campaign: dict,
+        wf_ids: dict,
+    ) -> Optional[str]:
+        """Write a local deployment manifest without secrets."""
+        log_dir = Path(os.environ.get("GHL_CAMPAIGN_LOG_DIR", "logs/campaigns"))
+        try:
+            log_dir.mkdir(parents=True, exist_ok=True)
+            timestamp = time.strftime("%Y%m%d-%H%M%S", time.gmtime())
+            safe_name = re.sub(r"[^a-zA-Z0-9._-]+", "-", folder_name).strip("-")
+            path = log_dir / f"{timestamp}-{safe_name or 'campaign'}.json"
+            workflows = []
+            for key in sorted(campaign.keys()):
+                wf_id = wf_ids.get(key)
+                workflows.append(
+                    {
+                        "key": key,
+                        "name": campaign[key].get("name", ""),
+                        "tag": campaign[key].get("tag", ""),
+                        "workflow_id": wf_id,
+                        "step_count": len(campaign[key].get("templates", [])),
+                        "url": (
+                            f"https://app.gohighlevel.com/v2/location/{self.loc}/automation/workflow/{wf_id}"
+                            if wf_id
+                            else ""
+                        ),
+                    }
+                )
+            manifest = {
+                "timestamp_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                "location_id": self.loc,
+                "campaign_name": folder_name,
+                "folder_id": folder_id,
+                "stats": self.stats,
+                "workflows": workflows,
+            }
+            path.write_text(json.dumps(manifest, indent=2) + "\n")
+            return str(path)
+        except Exception as exc:
+            self.stats["errors"].append(f"Failed to write campaign log: {exc}")
+            return None
+
     def build(self, campaign: dict, folder_name: str, parent_folder: Optional[str] = None,
               company_id: str = "", user_id: str = "") -> dict:
         """Build an entire campaign. Returns stats."""
@@ -583,6 +629,9 @@ class CampaignBuilder:
 
         self.stats["end_time"] = time.time()
         self.stats["api_calls"] = self.client.call_count
+        log_path = self._write_campaign_log(folder_name, folder_id, campaign, wf_ids)
+        if log_path:
+            self.stats["log_path"] = log_path
 
         # Summary
         elapsed = self.stats["end_time"] - self.stats["start_time"]
@@ -593,6 +642,8 @@ class CampaignBuilder:
         print(f"  Triggers:  {self.stats['triggers_created']}")
         print(f"  API calls: {self.stats['api_calls']}")
         print(f"  Errors:    {len(self.stats['errors'])}")
+        if log_path:
+            print(f"  Log:       {log_path}")
         if self.stats["errors"]:
             for e in self.stats["errors"]:
                 print(f"    - {e}")
